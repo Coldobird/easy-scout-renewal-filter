@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Easy scout renewal filter</title>
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #144617;
+      margin: 0;
+      padding: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 8px;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    thead th {
+      background-color: #1b5e20;
+      color: #e8f5e9;
+      font-weight: 600;
+    }
+
+    th:nth-child(1),
+    td:nth-child(1) {
+      width: 10%;
+    }
+
+    th:nth-child(2),
+    td:nth-child(2) {
+      width: max-content;
+    }
+
+    th:nth-child(3),
+    td:nth-child(3) {
+      width: 10%;
+    }
+
+    th:nth-child(4),
+    td:nth-child(4) {
+      width: 10%;
+    }
+
+    th:nth-child(5),
+    td:nth-child(5) {
+      width: 12%;
+    }
+
+    tbody tr {
+      background-color: #f1f8e9;
+      color: #424242;
+    }
+
+    th,
+    td {
+      padding: 16px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    button {
+      background-color: #2e7d32;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      margin: 10px 5px;
+      cursor: pointer;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      font-size: 14px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    button:hover {
+      background-color: #1b5e20;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    #nameList {
+      margin-bottom: 8px;
+    }
+
+    #nameList span {
+      display: inline-block;
+      margin: 2px 4px;
+      padding: 4px 8px;
+      background-color: #e8f5e9;
+      border-radius: 15px;
+      color: #1b5e20;
+      font-size: 12px;
+    }
+
+    #addNameInput {
+      margin-right: 10px;
+      padding: 8px;
+      border: 1px solid #2e7d32;
+      border-radius: 4px;
+    }
+  </style>
+
+</head>
+
+<body>
+  <h1>Easy scout renewal filter</h1>
+  <button id="filterEscoteirosBtn">Show Escoteiros Beneficiarios</button>
+  <button id="showAllBtn">Show All</button>
+
+  <div>
+    <input type="text" id="addNameInput" placeholder="Enter name to add">
+    <button id="addNameBtn">Add Name to Filter</button>
+    <button id="filterNamesBtn">Filter by Names</button>
+  </div>
+
+  <div id="nameList"></div>
+
+  <table id="memberTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Category</th>
+        <th>Expiration Date</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div style="display: none;">
+    <!-- ////////////////////////////////////   ADD HTML NAMES HERE   //////////////////////////////////////////////////// -->
+
+
+
+    <!-- //////////////////////////////////////////////////////////////////////////////////////// -->
+  </div>
+
+  <script>
+    const data = [];
+    const namesToFilter = new Set([]);
+
+    const populateTable = (members) => {
+      const tbody = document.querySelector('#memberTable tbody');
+      tbody.textContent = '';
+
+      members.forEach(({ id, name, type, category, expirationDate }) => {
+        const row = document.createElement('tr');
+
+        [id, name, type, category, expirationDate].forEach(text => {
+          const cell = document.createElement('td');
+          cell.textContent = text;
+          row.appendChild(cell);
+        });
+
+        tbody.appendChild(row);
+      });
+    };
+
+    const filterEscoteiros = () => {
+      const filteredData = data.filter(member =>
+        member.category === 'Escoteiro' && member.type === 'Beneficiário'
+      );
+      populateTable(filteredData);
+    };
+
+    const filterByName = () => {
+      const filteredData = data.filter(member =>
+        namesToFilter.has(member.name)
+      );
+      populateTable(filteredData);
+    };
+
+    const updateNameList = () => {
+      const nameList = document.getElementById('nameList');
+      nameList.innerHTML = '';
+      namesToFilter.forEach(name => {
+        const span = document.createElement('span');
+        span.textContent = name;
+        nameList.appendChild(span);
+      });
+    };
+
+    const addNameToFilter = () => {
+      const nameInput = document.getElementById('addNameInput');
+      const inputValue = nameInput.value.trim().toUpperCase();
+
+      // Split the input value by two or more consecutive spaces
+      const names = inputValue.split(/\s{2,}/);
+
+      names.forEach(name => {
+        const trimmedName = name.trim();
+        if (trimmedName && !namesToFilter.has(trimmedName)) {
+          namesToFilter.add(trimmedName);
+        }
+      });
+
+      updateNameList();
+      nameInput.value = '';
+    };
+
+    const initializeApp = () => {
+      document.querySelectorAll('.x-grid3-row').forEach(row => {
+        const cols = row.querySelectorAll('.x-grid3-cell-inner');
+
+        // Clean up the name by removing newlines and multiple spaces
+        const cleanName = cols[1].textContent
+          .replace(/\n/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        data.push({
+          id: cols[0].textContent.trim(),
+          name: cleanName,
+          type: cols[2].textContent.trim(),
+          category: cols[3].textContent.trim(),
+          expirationDate: cols[4].textContent.trim()
+        });
+      });
+
+      populateTable(data);
+
+      document.getElementById('filterEscoteirosBtn').addEventListener('click', filterEscoteiros);
+      document.getElementById('showAllBtn').addEventListener('click', () => populateTable(data));
+      document.getElementById('filterNamesBtn').addEventListener('click', filterByName);
+      document.getElementById('addNameBtn').addEventListener('click', addNameToFilter);
+      document.getElementById('addNameInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          addNameToFilter();
+        }
+      });
+
+      updateNameList();
+    };
+
+    document.addEventListener('DOMContentLoaded', initializeApp);
+  </script>
+</body>
+
+</html>
