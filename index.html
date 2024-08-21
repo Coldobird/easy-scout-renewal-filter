@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Easy scout renewal filter</title>
+  <title>renovações escoteiras</title>
   <style>
     body {
       font-family: 'Roboto', Arial, sans-serif;
@@ -18,7 +18,7 @@
       width: 100%;
       border-collapse: separate;
       border-spacing: 0;
-      border-radius: 8px;
+      border-radius: 8px 8px 0 0;
       box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
       overflow: hidden;
     }
@@ -27,6 +27,17 @@
       background-color: #1b5e20;
       color: #e8f5e9;
       font-weight: 600;
+    }
+
+    table-footer {
+      display: flex;
+      justify-content: center;
+      margin-top: -1px;
+      border-radius: 0 0 8px 8px;
+      background-color: #c6dbad;
+      color: #e8f5e9;
+      font-weight: 600;
+      width: 100% !important;
     }
 
     th:nth-child(1),
@@ -51,7 +62,7 @@
 
     th:nth-child(5),
     td:nth-child(5) {
-      width: 12%;
+      width: 15%;
     }
 
     tbody tr {
@@ -87,63 +98,137 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     }
 
-    #nameList {
-      margin-bottom: 8px;
+    h4 {
+      margin: 0;
+      margin-block: 14px 8px;
     }
 
-    #nameList span {
+    name-list-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      border: 1px #ccc solid;
+      border-radius: 6px;
+      padding: 6px 64px 6px 10px;
+      min-height: 48px;
+    }
+
+    name-list span {
       display: inline-block;
       margin: 2px 4px;
       padding: 4px 8px;
       background-color: #e8f5e9;
       border-radius: 15px;
       color: #1b5e20;
-      font-size: 12px;
+      font-size: 14px;
     }
 
-    #addNameInput {
+    #addNameBtn {
       margin-right: 10px;
-      padding: 8px;
+      font-size: 20px;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      margin: 2px 4px;
       border: 1px solid #2e7d32;
-      border-radius: 4px;
+      border-radius: 100%;
+    }
+
+    #clearNamesBtn {
+      position: absolute;
+      right: 0;
+      top: -4px;
+
+      width: 32px;
+      height: 32px;
+      padding: 0;
+
+      border-radius: 100%;
+      border: 1px solid #2e7d32;
+      color: #2e7d32;
+      background-color: transparent;
+    }
+
+    .solo {
+      justify-content: center;
+      align-items: stretch;
+      padding: 6px 10px;
+    }
+
+    .solo * {
+      flex-grow: 1;
+    }
+
+    .solo #addNameBtn {
+      width: 100%;
+      height: 100%;
+      border-radius: 6px;
+      margin: 0;
+      background-color: #e8f5e9;
+      color: #144617;
+      border: 0;
+      box-shadow: none;
+      transition: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .solo #clearNamesBtn {
+      display: none;
+    }
+
+    error-messages {
+      color: red;
+      display: block;
+    }
+
+    table-container {
+      display: block;
+    }
+
+    .disabled {
+      pointer-events: none;
+      background-color: #ccc;
+      box-shadow: none;
     }
   </style>
-
 </head>
 
 <body>
-  <h1>Easy scout renewal filter</h1>
-  <button id="filterEscoteirosBtn">Show Escoteiros Beneficiarios</button>
-  <button id="showAllBtn">Show All</button>
+  <h1>Filto de renovações escoteiras fácil</h1>
+  <h4>Jovens para filter</h4>
+  <name-list-container>
+    <button id="clearNamesBtn" title="Limpar Filtro">X</button>
 
-  <div>
-    <input type="text" id="addNameInput" placeholder="Enter name to add">
-    <button id="addNameBtn">Add Name to Filter</button>
-    <button id="filterNamesBtn">Filter by Names</button>
-  </div>
+    <name-list id="nameList">
+      <button id="addNameBtn" title="Add Jovem">+</button>
+    </name-list>
+  </name-list-container>
 
-  <div id="nameList"></div>
+  <button id="filterNamesBtn">Filtrar por nome</button>
+  <button id="showAllBtn">Mostrar Todos</button>
 
-  <table id="memberTable">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Category</th>
-        <th>Expiration Date</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <table-container>
+    <error-messages id="errorMessages"></error-messages>
+    <table id="memberTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Tipo</th>
+          <th>Categoria</th>
+          <th>Data de expiração</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <table-footer>
+      <button id="importDataBtn">Colar renovações</button>
+    </table-footer>
+  </table-container>
 
-  <div style="display: none;">
-    <!-- ////////////////////////////////////   ADD HTML NAMES HERE   //////////////////////////////////////////////////// -->
 
-
-
-    <!-- //////////////////////////////////////////////////////////////////////////////////////// -->
-  </div>
 
   <script>
     const data = [];
@@ -166,11 +251,123 @@
       });
     };
 
-    const filterEscoteiros = () => {
-      const filteredData = data.filter(member =>
-        member.category === 'Escoteiro' && member.type === 'Beneficiário'
-      );
-      populateTable(filteredData);
+    const displayErrors = (errors) => {
+      const errorDiv = document.getElementById('errorMessages');
+      errorDiv.innerHTML = errors.join('<br>');
+    };
+
+    const removeError = () => {
+      const errorDiv = document.getElementById('errorMessages');
+      errorDiv.textContent = '';
+    };
+
+    const importDataFromClipboard = async () => {
+      const errors = [];
+      try {
+        const clipboardText = await navigator.clipboard.readText();
+        const rows = clipboardText.trim().split('\n');
+
+        rows.forEach((row, index) => {
+          // Split by any sequence of tabs or spaces
+          const columns = row.split(/\s{2,}|\t+/);
+
+          // Validate that the row has exactly 5 columns
+          if (columns.length !== 5) {
+            errors.push(`Row ${index + 1} has an invalid format: "${row}". Expected 5 columns, found ${columns.length}.`);
+            return;
+          }
+
+          const [id, name, type, category, expirationDate] = columns;
+
+          data.push({
+            id: id.trim(),
+            name: name.trim(),
+            type: type.trim(),
+            category: category.trim(),
+            expirationDate: expirationDate.trim()
+          });
+        });
+
+        if (errors.length > 0) {
+          displayErrors(errors);
+        } else {
+          populateTable(data);
+          removeError();
+        }
+      } catch (err) {
+        console.error('Failed to read clipboard contents: ', err);
+        errors.push('Failed to read clipboard contents.');
+        displayErrors(errors);
+      }
+    };
+
+    const saveNamesToLocalStorage = () => {
+      const namesArray = Array.from(namesToFilter);
+      localStorage.setItem('namesToFilter', JSON.stringify(namesArray));
+    };
+
+    const updateNameList = () => {
+      const nameList = document.querySelector('name-list');
+      const addButton = nameList.querySelector('#addNameBtn');
+      const nameListContainer = document.querySelector('name-list-container');
+      const filterNameButton = document.querySelector('#filterNamesBtn');
+      const showAllButton = document.querySelector('#showAllBtn');
+
+      nameList.querySelectorAll('span').forEach(span => span.remove());
+
+      const isEmpty = namesToFilter.size === 0;
+
+      nameListContainer.classList.toggle('solo', isEmpty);
+      filterNameButton.classList.toggle('disabled', isEmpty);
+      showAllButton.classList.toggle('disabled', isEmpty);
+
+      addButton.textContent = isEmpty ? 'Clique para colar lista de jovens' : '+';
+      addButton.title = isEmpty ? '' : 'Add Jovem';
+
+      if (!isEmpty) {
+        namesToFilter.forEach(name => {
+          const span = document.createElement('span');
+          span.textContent = name;
+          nameList.insertBefore(span, addButton);
+        });
+      }
+
+      saveNamesToLocalStorage();
+    };
+
+    const loadNamesFromLocalStorage = () => {
+      const storedNames = JSON.parse(localStorage.getItem('namesToFilter')) || [];
+      storedNames.forEach(name => namesToFilter.add(name));
+      updateNameList();
+    };
+
+    const clearNames = () => {
+      namesToFilter.clear();
+      localStorage.removeItem('namesToFilter');
+      updateNameList();
+      populateTable(data)
+    };
+
+    const addNamesFromClipboard = async () => {
+      try {
+        const clipboardText = await navigator.clipboard.readText();
+        const inputValue = clipboardText.trim().toUpperCase();
+
+        // Split the input value by two or more consecutive spaces
+        const names = inputValue.split(/\s{2,}/);
+
+        names.forEach(name => {
+          const trimmedName = name.trim();
+          if (trimmedName && !namesToFilter.has(trimmedName)) {
+            namesToFilter.add(trimmedName);
+          }
+        });
+
+        updateNameList();
+      } catch (err) {
+        console.error('Failed to read clipboard contents: ', err);
+        displayErrors(['Failed to read clipboard contents for names.']);
+      }
     };
 
     const filterByName = () => {
@@ -178,16 +375,6 @@
         namesToFilter.has(member.name)
       );
       populateTable(filteredData);
-    };
-
-    const updateNameList = () => {
-      const nameList = document.getElementById('nameList');
-      nameList.innerHTML = '';
-      namesToFilter.forEach(name => {
-        const span = document.createElement('span');
-        span.textContent = name;
-        nameList.appendChild(span);
-      });
     };
 
     const addNameToFilter = () => {
@@ -227,17 +414,14 @@
         });
       });
 
+      loadNamesFromLocalStorage();
       populateTable(data);
 
-      document.getElementById('filterEscoteirosBtn').addEventListener('click', filterEscoteiros);
       document.getElementById('showAllBtn').addEventListener('click', () => populateTable(data));
       document.getElementById('filterNamesBtn').addEventListener('click', filterByName);
-      document.getElementById('addNameBtn').addEventListener('click', addNameToFilter);
-      document.getElementById('addNameInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          addNameToFilter();
-        }
-      });
+      document.getElementById('addNameBtn').addEventListener('click', addNamesFromClipboard);
+      document.getElementById('clearNamesBtn').addEventListener('click', clearNames);
+      document.getElementById('importDataBtn').addEventListener('click', importDataFromClipboard);
 
       updateNameList();
     };
