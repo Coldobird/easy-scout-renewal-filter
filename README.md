@@ -1,6 +1,8 @@
 # Verificar Associados para Renovação
 Este site ajuda a identificar facilmente quais associados precisam ser renovados na sua seção.
 
+https://coldobird.github.io/easy-scout-renewal-filter/
+
 **Passos para Uso:**
 1. Obtenha a lista de associados a serem renovados.
   - Acesse o Paxtu ADM e copie a lista de associados que precisam de renovação.
